@@ -7,10 +7,10 @@ export const products = [
     category: "Audio",
     price: 59.99,
     image:
-      "https://images.unsplash.com/photo-1518443182971-7a3b1dacf4a0?q=80&w=1200&auto=format&fit=crop",
+      "/products/auriculares.jpeg",
     stock: 12,
     rating: 4.5,
-    tags: ["bluetooth", "microfono"]
+    tags: ["bluetooth", "microfono"],
   },
   {
     id: "p-1002",
@@ -19,10 +19,10 @@ export const products = [
     category: "Periféricos",
     price: 74.9,
     image:
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop",
+      "/products/teclado.jpeg",
     stock: 7,
     rating: 4.7,
-    tags: ["switches rojos", "rgb"]
+    tags: ["switches rojos", "rgb"],
   },
   {
     id: "p-1003",
@@ -31,10 +31,10 @@ export const products = [
     category: "Periféricos",
     price: 39.5,
     image:
-      "https://images.unsplash.com/photo-1585079542156-2755d9c8aff3?q=80&w=1200&auto=format&fit=crop",
+      "/products/ratonOpt.jpeg",
     stock: 20,
     rating: 4.3,
-    tags: ["ergonómico", "gaming"]
+    tags: ["ergonómico", "gaming"],
   },
   {
     id: "p-1004",
@@ -43,10 +43,10 @@ export const products = [
     category: "Monitores",
     price: 199.0,
     image:
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop",
+      "/products/monitor.jpeg",
     stock: 5,
     rating: 4.6,
-    tags: ["144hz", "1ms"]
+    tags: ["144hz", "1ms"],
   },
   {
     id: "p-1005",
@@ -55,10 +55,10 @@ export const products = [
     category: "Audio",
     price: 44.99,
     image:
-      "https://images.unsplash.com/photo-1593357849844-1f28f86f9a04?q=80&w=1200&auto=format&fit=crop",
+      "/products/altavoz.jpeg",
     stock: 18,
     rating: 4.2,
-    tags: ["impermeable", "party"]
+    tags: ["impermeable", "party"],
   },
   {
     id: "p-1006",
@@ -70,7 +70,7 @@ export const products = [
       "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1200&auto=format&fit=crop",
     stock: 14,
     rating: 4.8,
-    tags: ["3500MB/s"]
+    tags: ["3500MB/s"],
   },
   {
     id: "p-1007",
@@ -79,10 +79,10 @@ export const products = [
     category: "Almacenamiento",
     price: 64.95,
     image:
-      "https://images.unsplash.com/photo-1585079542165-0a1fcf04c0f8?q=80&w=1200&auto=format&fit=crop",
+      "/products/disco.jpeg",
     stock: 25,
     rating: 4.4,
-    tags: ["USB 3.2"]
+    tags: ["USB 3.2"],
   },
   {
     id: "p-1008",
@@ -91,10 +91,10 @@ export const products = [
     category: "Portátiles",
     price: 699.0,
     image:
-      "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?q=80&w=1200&auto=format&fit=crop",
+     "/products/portatil.jpeg" ,
     stock: 6,
     rating: 4.6,
-    tags: ["ofimática", "ligero"]
+    tags: ["ofimática", "ligero"],
   },
   {
     id: "p-1009",
@@ -103,10 +103,10 @@ export const products = [
     category: "Periféricos",
     price: 29.99,
     image:
-      "https://images.unsplash.com/photo-1587829741301-dc798b83add3?q=80&w=1200&auto=format&fit=crop",
+      "/products/webcam.jpeg",
     stock: 30,
     rating: 4.1,
-    tags: ["streaming", "zoom"]
+    tags: ["streaming", "zoom"],
   },
   {
     id: "p-1010",
@@ -115,10 +115,10 @@ export const products = [
     category: "Audio",
     price: 129.0,
     image:
-      "https://images.unsplash.com/photo-1611175694989-b6c67f182b4f?q=80&w=1200&auto=format&fit=crop",
+      "/products/barra.jpeg",
     stock: 10,
     rating: 4.5,
-    tags: ["subwoofer", "hdmi arc"]
+    tags: ["subwoofer", "hdmi arc"],
   },
   {
     id: "p-1011",
@@ -127,10 +127,10 @@ export const products = [
     category: "Smart Home",
     price: 19.99,
     image:
-      "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?q=80&w=1200&auto=format&fit=crop",
+      "/products/asistente.jpeg",
     stock: 50,
     rating: 4.0,
-    tags: ["alexa", "google"]
+    tags: ["alexa", "google"],
   },
   {
     id: "p-1012",
@@ -139,11 +139,11 @@ export const products = [
     category: "Smart Home",
     price: 36.99,
     image:
-      "https://images.unsplash.com/photo-1587829741301-dc798b83add3?q=80&w=1200&auto=format&fit=crop",
+     "/products/camara.jpeg",
     stock: 22,
     rating: 4.3,
-    tags: ["detección movimiento", "nube"]
-  }
+    tags: ["detección movimiento", "nube"],
+  },
 ];
 
 // Derivar categorías con conteo

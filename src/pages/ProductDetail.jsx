@@ -2,6 +2,7 @@ import { useParams, Link } from "react-router-dom";
 import { products } from "../data/products.js";
 import { useCart } from "../context/CartContext.jsx";
 import { useMemo, useState } from "react";
+import ImageWithFallback from "../components/ImageWithFallback.jsx";
 
 export default function ProductDetail() {
   const { id } = useParams();
@@ -27,7 +28,13 @@ export default function ProductDetail() {
       </nav>
 
       <div className="card" style={{ display: "grid", gridTemplateColumns: "minmax(260px, 520px) 1fr", gap: 16 }}>
-        <img src={image} alt={name} style={{ width: "100%", height: 360, objectFit: "cover" }} />
+      <ImageWithFallback
+        src={src}  /* o directamente product.image */
+        alt={name}
+        className=""
+        style={{ width: "100%", height: 360, objectFit: "cover" }}
+      />
+
         <div className="card-body" style={{ padding: 16 }}>
           <h1 style={{ marginTop: 0 }}>{name}</h1>
           <p className="muted" style={{ marginTop: -8 }}>{brand} • {category}</p>

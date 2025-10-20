@@ -1,11 +1,13 @@
 import { Link } from "react-router-dom";
+import ImageWithFallback from "./ImageWithFallback.jsx";
 
 export default function ProductCard({ product, onAdd }) {
   const { id, name, brand, price, image, stock } = product;
+
   return (
     <article className="card">
       <Link to={`/product/${id}`}>
-        <img className="card-img" src={image} alt={name} loading="lazy" />
+        <ImageWithFallback className="card-img" src={image} alt={name} />
       </Link>
       <div className="card-body">
         <Link to={`/product/${id}`} className="card-title">{name}</Link>
