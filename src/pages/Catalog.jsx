@@ -70,20 +70,36 @@ export default function Catalog() {
                 <SortSelect value={sort} onChange={setSort} />
               </div>
               <div style={{ display: "flex", gap: 12 }}>
-                <input
-                  type="number"
-                  placeholder="€ mín"
-                  value={minPrice}
-                  onChange={(e) => setMinPrice(e.target.value)}
-                  style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #1f2937", background: "#0b1220", color: "var(--text)", width: 140 }}
-                />
-                <input
-                  type="number"
-                  placeholder="€ máx"
-                  value={maxPrice}
-                  onChange={(e) => setMaxPrice(e.target.value)}
-                  style={{ padding: "10px 12px", borderRadius: 12, border: "1px solid #1f2937", background: "#0b1220", color: "var(--text)", width: 140 }}
-                />
+                  <input
+                    type="number"
+                    placeholder="€ mín"
+                    value={minPrice}
+                    onChange={(e) => setMinPrice(e.target.value)}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 12,
+                      border: "1px solid #cbd5e1",
+                      background: "#e0f2fe",       // azul claro
+                      color: "#0f172a",           // texto azul oscuro legible
+                      width: 140
+                    }}
+                  />
+                  <input
+                    type="number"
+                    placeholder="€ máx"
+                    value={maxPrice}
+                    onChange={(e) => setMaxPrice(e.target.value)}
+                    style={{
+                      padding: "10px 12px",
+                      borderRadius: 12,
+                      border: "1px solid #cbd5e1",
+                      background: "#e0f2fe",       // azul claro
+                      color: "#0f172a",
+                      width: 140
+                    }}
+                  />
+
+             
                 <div style={{ marginLeft: "auto" }} className="muted">
                   {filtered.length} resultado{filtered.length !== 1 ? "s" : ""}
                 </div>
