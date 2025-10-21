@@ -6,7 +6,7 @@ export default function CategorySidebar({ categories, selected, onSelect }) {
         <li>
           <button
             className="btn"
-            style={{ width: "100%", background: selected === "Todas" ? "#0f172a" : "" }}
+            style={{ width: "100%", background: selected === "Todas" ? "#fdb720ff" : "" }}
             onClick={() => onSelect("Todas")}
           >
             Todas
@@ -16,7 +16,7 @@ export default function CategorySidebar({ categories, selected, onSelect }) {
           <li key={c.name}>
             <button
               className="btn"
-              style={{ width: "100%", background: selected === c.name ? "#0f172a" : "" }}
+              style={{ width: "100%", background: selected === c.name ? "#fdb720ff" : "" }}
               onClick={() => onSelect(c.name)}
             >
               {c.name} <span className="badge">{c.count}</span>

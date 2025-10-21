@@ -79,8 +79,8 @@ export default function Catalog() {
                       padding: "10px 12px",
                       borderRadius: 12,
                       border: "1px solid #cbd5e1",
-                      background: "#e0f2fe",       // azul claro
-                      color: "#0f172a",           // texto azul oscuro legible
+                      background: "#c8e4f7ff",       // azul claro
+                      color: "#000000ff",           // texto azul oscuro legible
                       width: 140
                     }}
                   />
@@ -93,8 +93,8 @@ export default function Catalog() {
                       padding: "10px 12px",
                       borderRadius: 12,
                       border: "1px solid #cbd5e1",
-                      background: "#e0f2fe",       // azul claro
-                      color: "#0f172a",
+                      background: "#c8e4f7ff",       // azul claro
+                      color: "#000000ff",
                       width: 140
                     }}
                   />

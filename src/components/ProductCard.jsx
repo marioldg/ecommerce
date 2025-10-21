@@ -14,7 +14,10 @@ export default function ProductCard({ product, onAdd }) {
         <div className="card-brand">{brand}</div>
         <div className="card-price">€ {price.toFixed(2)}</div>
         <div className="card-actions">
-          <button className="btn" onClick={onAdd}>Añadir al carrito</button>
+          <button className="btn btn-catalogo" onClick={() => onAdd(product)}>
+          Añadir al carrito
+          </button>
+
           <span className="badge">{stock > 0 ? "En stock" : "Agotado"}</span>
         </div>
       </div>

@@ -6,8 +6,8 @@ export default function SortSelect({ value, onChange }) {
       style={{
         padding: "10px 12px",
         borderRadius: 12,
-        border: "1px solid #1f2937",
-        background: "#0b1220",
+        border: "1px solid #0099ffff",
+        background: "#c8e4f7ff",
         color: "var(--text)"
       }}
     >
