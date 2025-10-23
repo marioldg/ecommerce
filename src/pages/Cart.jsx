@@ -34,7 +34,7 @@ export default function Cart() {
                   min="1"
                   value={i.qty}
                   onChange={(e) => setQty(i.id, Number(e.target.value))}
-                  style={{ width: 64, padding: 8, borderRadius: 10, border: "1px solid #1f2937", background: "#0b1220", color: "var(--text)" }}
+                  style={{ width: 64, padding: 8, borderRadius: 10, border: "1px solid #000000ff", background: "#f8b806ff", color: "var(--text)" }}
                 />
                 <button className="btn" onClick={() => inc(i.id)}>+</button>
 
