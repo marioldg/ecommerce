@@ -7,20 +7,24 @@ import SortSelect from "../components/SortSelect.jsx";
 import { useCart } from "../context/CartContext.jsx";
 
 export default function Catalog() {
+  // Obtengo la función addItem del contexto global del carrito
   const { addItem } = useCart();
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("Todas");
-  const [sort, setSort] = useState("relevance");
-  const [minPrice, setMinPrice] = useState("");
-  const [maxPrice, setMaxPrice] = useState("");
 
+  // Estados locales para los filtros de búsqueda
+  const [query, setQuery] = useState("");         // texto buscado
+  const [category, setCategory] = useState("Todas"); // categoría seleccionada
+  const [sort, setSort] = useState("relevance");  // tipo de orden
+  const [minPrice, setMinPrice] = useState("");   // precio mínimo
+  const [maxPrice, setMaxPrice] = useState("");   // precio máximo
+
+  // useMemo: recalcula la lista filtrada solo cuando cambian los filtros
   const filtered = useMemo(() => {
-    let list = [...allProducts];
+    let list = [...allProducts]; // copio la lista completa para trabajar sobre ella
 
-    // Por categoría
+    // Filtro por categoría
     if (category !== "Todas") list = list.filter(p => p.category === category);
 
-    // Por texto (nombre, marca, tags)
+    // Filtro por texto (nombre, marca o tags)
     if (query.trim()) {
       const q = query.toLowerCase();
       list = list.filter(p =>
@@ -30,76 +34,89 @@ export default function Catalog() {
       );
     }
 
-    // Por precio
+    // Filtro por precio mínimo y máximo (si el usuario escribe algo)
     const min = Number(minPrice);
     const max = Number(maxPrice);
     if (!Number.isNaN(min) && minPrice !== "") list = list.filter(p => p.price >= min);
     if (!Number.isNaN(max) && maxPrice !== "") list = list.filter(p => p.price <= max);
 
-    // Orden
+    // Orden de resultados según la opción seleccionada
     switch (sort) {
       case "price-asc": list.sort((a,b) => a.price - b.price); break;
       case "price-desc": list.sort((a,b) => b.price - a.price); break;
       case "rating-desc": list.sort((a,b) => b.rating - a.rating); break;
       case "name-asc": list.sort((a,b) => a.name.localeCompare(b.name)); break;
-      default: break; // relevancia = no orden especial
+      default: break; // relevancia = sin orden específico
     }
+
     return list;
   }, [category, query, sort, minPrice, maxPrice]);
 
   return (
     <section className="container">
+      {/* Cabecera del catálogo */}
       <header style={{ marginBottom: 12 }}>
         <h1 style={{ margin: 0 }}>Catálogo</h1>
-        <p className="muted">Explora por categorías, busca y ordena como en una tienda real.</p>
+        <p className="muted">
+          Explora por categorías, busca y ordena como en una tienda real.
+        </p>
       </header>
 
+      {/* Layout principal: barra lateral + área de productos */}
       <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", gap: 16 }}>
+        
+        {/* Barra lateral con categorías */}
         <CategorySidebar
           categories={allCategories}
           selected={category}
           onSelect={setCategory}
         />
 
+        {/* Parte derecha: buscador, filtros y resultados */}
         <div style={{ display: "grid", gap: 12 }}>
-          {/* Controles superiores */}
+          
+          {/* Controles de búsqueda y filtrado */}
           <div className="card">
             <div className="card-body" style={{ display: "grid", gap: 12 }}>
+              
+              {/* Barra de búsqueda + selector de orden */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 220px", gap: 12 }}>
                 <SearchBar value={query} onChange={setQuery} />
                 <SortSelect value={sort} onChange={setSort} />
               </div>
-              <div style={{ display: "flex", gap: 12 }}>
-                  <input
-                    type="number"
-                    placeholder="€ mín"
-                    value={minPrice}
-                    onChange={(e) => setMinPrice(e.target.value)}
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: 12,
-                      border: "1px solid #cbd5e1",
-                      background: "#c8e4f7ff",       // azul claro
-                      color: "#000000ff",           // texto azul oscuro legible
-                      width: 140
-                    }}
-                  />
-                  <input
-                    type="number"
-                    placeholder="€ máx"
-                    value={maxPrice}
-                    onChange={(e) => setMaxPrice(e.target.value)}
-                    style={{
-                      padding: "10px 12px",
-                      borderRadius: 12,
-                      border: "1px solid #cbd5e1",
-                      background: "#c8e4f7ff",       // azul claro
-                      color: "#000000ff",
-                      width: 140
-                    }}
-                  />
 
-             
+              {/* Filtros por precio y contador de resultados */}
+              <div style={{ display: "flex", gap: 12 }}>
+                <input
+                  type="number"
+                  placeholder="€ mín"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 12,
+                    border: "1px solid #cbd5e1",
+                    background: "#c8e4f7ff", // azul claro
+                    color: "#000000ff",      // texto legible
+                    width: 140
+                  }}
+                />
+                <input
+                  type="number"
+                  placeholder="€ máx"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  style={{
+                    padding: "10px 12px",
+                    borderRadius: 12,
+                    border: "1px solid #cbd5e1",
+                    background: "#c8e4f7ff",
+                    color: "#000000ff",
+                    width: 140
+                  }}
+                />
+
+                {/* Cantidad de resultados filtrados */}
                 <div style={{ marginLeft: "auto" }} className="muted">
                   {filtered.length} resultado{filtered.length !== 1 ? "s" : ""}
                 </div>
@@ -107,7 +124,7 @@ export default function Catalog() {
             </div>
           </div>
 
-          {/* Grid de productos */}
+          {/* Grid con los productos resultantes */}
           <section className="grid">
             {filtered.map((p) => (
               <ProductCard key={p.id} product={p} onAdd={() => addItem(p)} />

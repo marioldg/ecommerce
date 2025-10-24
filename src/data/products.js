@@ -1,4 +1,3 @@
-// Datos de ejemplo realistas con categorías
 export const products = [
   {
     id: "p-1001",

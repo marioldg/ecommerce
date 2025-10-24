@@ -15,6 +15,8 @@ export default function ProductDetail() {
   const { addItem } = useCart();
   const [qty, setQty] = useState(1);
 
+  // Manejo de producto no encontrado en la url
+
   if (!product) {
     return (
       <section>
@@ -118,15 +120,25 @@ export default function ProductDetail() {
         </div>
       </div>
 
-      {/* Sugerencias */}
+       {/* Sugerencias */}
       <h3 style={{ marginTop: 20 }}>También te puede interesar</h3>
+
+      {/* Grid con productos relacionados */}
       <div className="grid">
         {products
+          // Filtro los productos de la misma categoría, excluyendo el actual
           .filter((p) => p.category === category && String(p.id) !== String(id))
+
+          // Muestro solo los primeros 4 resultados
           .slice(0, 4)
+
+          // Mapeo cada producto para crear su mini tarjeta con enlace al detalle
           .map((p) => (
             <Link key={p.id} to={`/product/${p.id}`} className="card">
+              {/* Imagen del producto */}
               <ImageWithFallback className="card-img" src={p.image} alt={p.name} />
+
+              {/* Contenido de la tarjeta: nombre + precio */}
               <div className="card-body">
                 <div className="card-title">{p.name}</div>
                 <div className="card-price">€ {p.price.toFixed(2)}</div>
@@ -134,6 +146,7 @@ export default function ProductDetail() {
             </Link>
           ))}
       </div>
+
     </section>
   );
 }
