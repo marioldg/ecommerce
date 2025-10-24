@@ -1,152 +1,326 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useCart } from "../context/CartContext.jsx";
 
-export default function OrderSuccess() {
+// Genera un id de pedido legible: AAA-999999 (timestamp base36)
+const genOrderId = () => {
+  const base = (Date.now()).toString(36).toUpperCase();
+  return `${base.slice(0,3)}-${base.slice(3)}`;
+};
+
+export default function Checkout() {
+  const { items, totalPrice, clear } = useCart();
   const navigate = useNavigate();
-  const { state } = useLocation() || {};
-  const order = state?.order;
+  const [processing, setProcessing] = useState(false);
+  const [paid, setPaid] = useState(false);
+  const [paymentError, setPaymentError] = useState("");
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    card: "",
+    expiry: "",
+    cvv: "",
+  });
 
-  // Si se accede directamente a esta página sin datos de pedido,
-  // se muestra un mensaje y un enlace al catálogo
-  if (!order) {
+  const [errors, setErrors] = useState({
+    email: "",
+    card: "",
+    expiry: "",
+    cvv: "",
+  });
+
+  // ====== Fecha: validación robusta con ventana de siglo ======
+  const normalizeTwoDigitYear = (yyStr) => {
+    const yy = parseInt(yyStr, 10);
+    if (yy >= 0 && yy <= 49) return 2000 + yy; // 00-49 => 2000-2049
+    return 1900 + yy; // 50-99 => 1900-1999
+  };
+  const endOfMonthDate = (year, month1to12) =>
+    new Date(year, month1to12, 0, 23, 59, 59, 999);
+  const isCardExpired = (mmYY, now = new Date()) => {
+    if (!/^((0[1-9])|(1[0-2]))\/\d{2}$/.test(mmYY)) return true;
+    const [mm, yy] = mmYY.split("/");
+    const month = parseInt(mm, 10);
+    const year = normalizeTwoDigitYear(yy);
+    const expiryEnd = endOfMonthDate(year, month);
+    return expiryEnd < now;
+  };
+
+  // ====== Validadores ======
+  const validateEmail = (v) => /^\S+@\S+\.\S+$/.test(v);
+  const onlyDigits = (s) => s.replace(/\D/g, "");
+  const validateCard = (v) => /^\d{16}$/.test(onlyDigits(v));
+  const validateCVV = (v) => /^\d{3}$/.test(v);
+  const validateExpiry = (v) => /^((0[1-9])|(1[0-2]))\/\d{2}$/.test(v) && !isCardExpired(v);
+
+  // ====== Formateadores ======
+  const formatCard = (v) => {
+    const digits = onlyDigits(v).slice(0, 16);
+    return digits.replace(/(.{4})/g, "$1 ").trim();
+  };
+  const formatExpiry = (v) => {
+    const digits = onlyDigits(v).slice(0, 4);
+    if (digits.length <= 2) return digits;
+    return `${digits.slice(0,2)}/${digits.slice(2)}`;
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    let nextValue = value;
+    if (name === "card") nextValue = formatCard(value);
+    if (name === "expiry") nextValue = formatExpiry(value);
+
+    setForm((f) => ({ ...f, [name]: nextValue }));
+
+    setErrors((prev) => {
+      const draft = { ...prev };
+      if (name === "email") draft.email = validateEmail(nextValue) ? "" : "Email no válido";
+      if (name === "card") draft.card = validateCard(nextValue) ? "" : "La tarjeta debe tener 16 dígitos";
+      if (name === "expiry") draft.expiry = validateExpiry(nextValue) ? "" : "Tarjeta caducada o formato MM/AA incorrecto";
+      if (name === "cvv") draft.cvv = validateCVV(nextValue) ? "" : "CVV debe tener exactamente 3 dígitos";
+      return draft;
+    });
+
+    setPaymentError("");
+  };
+
+  // ====== Flags ======
+  const allFilled = useMemo(
+    () => form.name.trim() && form.email.trim() && form.card.trim() && form.expiry.trim() && form.cvv.trim(),
+    [form]
+  );
+  const noFieldErrors = useMemo(
+    () => !errors.email && !errors.card && !errors.expiry && !errors.cvv,
+    [errors]
+  );
+  const canPay = allFilled && noFieldErrors && items.length > 0;
+
+  const onSubmit = (e) => {
+    e.preventDefault();
+
+    const nextErrors = {
+      email: validateEmail(form.email) ? "" : "Email no válido",
+      card: validateCard(form.card) ? "" : "La tarjeta debe tener 16 dígitos",
+      expiry: validateExpiry(form.expiry) ? "" : "Tarjeta caducada o formato MM/AA incorrecto",
+      cvv: validateCVV(form.cvv) ? "" : "CVV debe tener exactamente 3 dígitos",
+    };
+    setErrors(nextErrors);
+
+    const hasAnyError = Object.values(nextErrors).some(Boolean) || items.length === 0;
+    if (hasAnyError) {
+      setPaymentError("Error en el pago: revisa los datos introducidos.");
+      return;
+    }
+
+    setProcessing(true);
+
+    // --- Snapshot del pedido ANTES de vaciar el carrito ---
+    const order = {
+      id: genOrderId(),
+      items: items.map(i => ({ ...i })), // copia para no perder cantidades
+      total: totalPrice,
+      buyer: { name: form.name, email: form.email },
+      createdAt: new Date().toISOString(),
+    };
+
+    // Simulación de pasarela:
+    setTimeout(() => {
+      setPaid(true);
+      clear(); // vacía carrito
+      setProcessing(false);
+      setPaymentError("");
+      // Navega a la página de éxito con el resumen del pedido
+      navigate("/success", { state: { order }, replace: true });
+    }, 900);
+  };
+
+  if (items.length === 0 && !paid) {
     return (
       <section className="container">
-        <h1>Pedido</h1>
-        <p className="muted">No hay información de pedido disponible.</p>
-        <Link to="/catalog" className="btn">Ir al catálogo</Link>
+        <h1>Pasarela de pago</h1>
+        <p className="muted">Tu carrito está vacío.</p>
+        <Link to="/catalog" className="btn">Volver al catálogo</Link>
       </section>
     );
   }
 
-  // Desestructuro los datos del pedido que vienen desde Checkout
-  const { id, items, total, buyer, createdAt } = order;
-
   return (
     <section className="container">
-      {/* Botón superior para volver al inicio */}
       <nav style={{ marginBottom: 12 }}>
-        <button className="btn" onClick={() => navigate("/")}>⟵ Ir al inicio</button>
+        <button className="btn" onClick={() => navigate(-1)}>⟵ Volver</button>
       </nav>
 
-      {/* Contenedor principal del resumen de pedido */}
       <div className="card" style={{ maxWidth: 900, margin: "0 auto" }}>
-        {/* Cabecera de confirmación */}
-        <div className="card-body" style={{ textAlign: "center" }}>
-          <h1 style={{ marginBottom: 6 }}>¡Pedido completado con éxito!</h1>
-          <p className="muted">
-            Gracias por tu compra. Te hemos enviado un email con el resumen de tu pedido.
+        <div className="card-body" style={{ borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+          <h1 style={{ margin: 0 }}>Finalizar compra</h1>
+          <p className="muted" style={{ marginTop: 6 }}>
+            Pasarela de pago ficticia para pruebas.
           </p>
         </div>
 
-        {/* Sección principal con los detalles del pedido y el resumen */}
         <div
           className="card-body"
           style={{
             display: "grid",
-            gridTemplateColumns: "1fr 360px", // izquierda: detalles / derecha: resumen
             gap: 16,
-            alignItems: "start",
+            gridTemplateColumns: "1fr 360px",
           }}
         >
-          {/* Bloque con los detalles del pedido */}
-          <div className="card">
-            <div className="card-body">
-              <div className="card-title">Detalles del pedido</div>
+          {/* Formulario */}
+          <form onSubmit={onSubmit} style={{ display: "grid", gap: 12 }}>
+            <label>
+              <div className="muted">Nombre y apellidos</div>
+              <input
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                placeholder="Tu nombre"
+                required
+                style={inputStyle}
+              />
+            </label>
 
-              {/* Nº de pedido */}
-              <div className="muted" style={{ marginBottom: 8 }}>
-                Nº de pedido: <strong>{id}</strong>
-              </div>
+            <label>
+              <div className="muted">Email</div>
+              <input
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleChange}
+                placeholder="tucorreo@ejemplo.com"
+                required
+                style={{ ...inputStyle, ...(errors.email ? errorInputStyle : null) }}
+              />
+              {errors.email && <small style={errorTextStyle}>{errors.email}</small>}
+            </label>
 
-              {/* Fecha del pedido */}
-              <div className="muted" style={{ marginBottom: 8 }}>
-                Fecha: <strong>{new Date(createdAt).toLocaleString()}</strong>
-              </div>
+            <label>
+              <div className="muted">Número de tarjeta</div>
+              <input
+                name="card"
+                inputMode="numeric"
+                value={form.card}
+                onChange={handleChange}
+                placeholder="0000 0000 0000 0000"
+                required
+                maxLength={19}
+                style={{ ...inputStyle, ...(errors.card ? errorInputStyle : null) }}
+              />
+              {errors.card && <small style={errorTextStyle}>{errors.card}</small>}
+            </label>
 
-              {/* Nombre del comprador (solo si existe en los datos) */}
-              {buyer?.name && (
-                <div className="muted" style={{ marginBottom: 8 }}>
-                  Comprador: <strong>{buyer.name}</strong>
-                </div>
-              )}
+            <div style={{ display: "flex", gap: 12 }}>
+              <label style={{ flex: 1 }}>
+                <div className="muted">Caducidad</div>
+                <input
+                  name="expiry"
+                  value={form.expiry}
+                  onChange={handleChange}
+                  placeholder="MM/AA"
+                  required
+                  inputMode="numeric"
+                  maxLength={5}
+                  style={{ ...inputStyle, ...(errors.expiry ? errorInputStyle : null) }}
+                />
+                {errors.expiry && <small style={errorTextStyle}>{errors.expiry}</small>}
+              </label>
 
-              {/* Email del comprador */}
-              {buyer?.email && (
-                <div className="muted" style={{ marginBottom: 8 }}>
-                  Email: <strong>{buyer.email}</strong>
-                </div>
-              )}
+              <label style={{ width: 120 }}>
+                <div className="muted">CVV</div>
+                <input
+                  name="cvv"
+                  inputMode="numeric"
+                  value={form.cvv}
+                  onChange={handleChange}
+                  placeholder="123"
+                  required
+                  maxLength={3}
+                  style={{ ...inputStyle, ...(errors.cvv ? errorInputStyle : null) }}
+                />
+                {errors.cvv && <small style={errorTextStyle}>{errors.cvv}</small>}
+              </label>
             </div>
 
-            {/* Listado de artículos comprados */}
-            <div
-              className="card-body"
-              style={{ borderTop: "1px solid rgba(0,0,0,0.06)" }}
-            >
-              <div className="card-title">Artículos</div>
-              <ul style={{ margin: 0, paddingLeft: 18 }}>
-                {items.map((i) => (
-                  <li key={i.id} className="muted" style={{ marginBottom: 6 }}>
-                    {i.qty} × {i.name} — € {(i.price * i.qty).toFixed(2)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+            {paymentError && (
+              <div className="card" style={errorCardStyle}>
+                <div className="card-body" style={{ padding: "8px 12px" }}>
+                  <strong>⚠️ {paymentError}</strong>
+                </div>
+              </div>
+            )}
 
-          {/* Tarjeta lateral con el resumen económico del pedido */}
+            <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+              <button type="submit" disabled={!canPay || processing} style={buttonStyle}>
+                {processing ? "Procesando..." : `Pagar € ${totalPrice.toFixed(2)}`}
+              </button>
+              <Link to="/cart" style={buttonStyle}>
+                Volver al carrito
+              </Link>
+            </div>
+          </form>
+
+          {/* Resumen naranja */}
           <aside
             className="card"
             style={{
-              backgroundColor: "rgba(248, 178, 106, 0.25)", 
-              border: "1px solid rgba(248, 178, 106, 0.6)", 
+              alignSelf: "start",
+              backgroundColor: "rgba(248, 178, 106, 0.25)",
+              border: "1px solid rgba(248, 178, 106, 0.6)",
             }}
           >
             <div className="card-body">
               <div className="card-title">Resumen</div>
-
-              {/* Total de artículos comprados */}
-              <div
-                className="muted"
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  marginBottom: 8,
-                }}
-              >
-                <span>Artículos</span>
-                <strong>{items.reduce((a, b) => a + b.qty, 0)}</strong>
-              </div>
-
-              {/* Total del pedido */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  borderTop: "1px solid rgba(248,178,106,0.4)",
-                  paddingTop: 8,
-                }}
-              >
-                <span className="muted">Total</span>
-                <strong>€ {total.toFixed(2)}</strong>
-              </div>
+              <ul style={{ margin: 0, paddingLeft: 18 }}>
+                {items.map((i) => (
+                  <li key={i.id} className="muted" style={{ marginBottom: 6 }}>
+                    {i.qty} × {i.name}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div
+              className="card-body"
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                borderTop: "1px solid rgba(248,178,106,0.4)",
+              }}
+            >
+              <div className="muted">Total</div>
+              <strong>€ {totalPrice.toFixed(2)}</strong>
             </div>
           </aside>
-        </div>
-
-        {/* Botones finales de acción */}
-        <div className="card-body" style={{ textAlign: "center" }}>
-          <Link to="/catalog" style={buttonStyle}>Seguir comprando</Link>
-          <span style={{ display: "inline-block", width: 8 }} />
-          <Link to="/" style={buttonStyle}>Ir al inicio</Link>
         </div>
       </div>
     </section>
   );
 }
 
-// Estilos de los botones inferiores
+/* 🎨 Estilos coherentes con tu app */
+const inputStyle = {
+  width: "100%",
+  padding: 10,
+  borderRadius: 12,
+  border: "1px solid #1f2937",
+  background: "#68a5dfff",
+  color: "var(--text)",
+};
+const errorInputStyle = {
+  outline: "2px solid #ef4444",
+  borderColor: "#ef4444",
+};
+const errorTextStyle = {
+  color: "#ef4444",
+  marginTop: 4,
+  display: "block",
+};
+const errorCardStyle = {
+  background: "rgba(239, 68, 68, 0.12)",
+  border: "1px solid rgba(239,68,68,0.28)",
+};
 const buttonStyle = {
-  backgroundColor: "#fca028ff", 
+  backgroundColor: "#fca028ff",
   border: "none",
   color: "#1a1a1a",
   fontWeight: "700",
